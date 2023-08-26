@@ -18,13 +18,13 @@ MinIO は、高性能で S3 互換のオブジェクトストレージを提供�
 
 イレイシャセット（Erasure Set）：イレイシャセットは、最大 32 のドライブからなるイレイションコードセットのグループを指します。イレイションコードは、複数のコピーと比較して低いデータ冗長性で十分なデータ信頼性を提供するデータ冗長性技術です。イレイシャセットにはデータブロックとパリティブロックが含まれ、異なるノードにランダムかつ均等に分布しています。
 
-![ErasureSet](./reposting-Minio_Exploration/ErasureSet.webp)
+![ErasureSet](https://pbs.twimg.com/media/F4dAfj3bkAAcDWC?format=jpg&name=900x900)
 
 > 図に示すように、イレイシャセットには 10 のドライブ（ディスク）が含まれていると仮定します。それは 6+4 のイレイションコードセットを構成します。ユーザーが 6MB のサイズのオブジェクトをアップロードした場合、それは 6 つの個別の 1MB データブロックに分割されます。その後、イレイションコードの計算に基づいて、さらに 1MB のパリティブロック 4 つが生成されます。これは合計で 10MB のデータで、ディスク上にランダムに分散されています。
 
 - サーバープール（Server Pool）：サーバープールは、MinIO ノードのグループで構成され、プール内のすべてのノードは同じコマンドで起動されます。図に示すように、プールは 3 つのノードと 6 つのドライブで構成され、計 18 つのドライブからなり、9+9 のイレイションコードセットを形成します。クラスターには複数のイレイションセットが含まれることがあります。
 
-![server pool](./reposting-Minio_Exploration/ServerPool.webp)
+![server pool](https://pbs.twimg.com/media/F4dAiE2bAAAidUZ?format=jpg&name=medium)
 
 - クラスター（Cluster）：クラスターは複数のサーバープールで構成されています。図に示すように、このクラスターには 2 つのプールが含まれています。
 
@@ -34,7 +34,7 @@ MinIO は、高性能で S3 互換のオブジェクトストレージを提供�
 
 ### 3.1 データのアップロード
 
-![upload](./reposting-Minio_Exploration/upload.webp)
+![upload](https://pbs.twimg.com/media/F4dAjomaAAAzxWZ?format=jpg&name=small)
 
 データのアップロードは、主に次のプロセスからなります（図に示されている通り）：
 
@@ -67,7 +67,7 @@ MinIO は、高性能で S3 互換のオブジェクトストレージを提供�
 
 ### 3.1.3.1 データブロック、パリティブロックの数の決定およびクォーラムへの書き込み
 
-![quorum](./reposting-Minio_Exploration/quorum.webp)
+![quorum](https://pbs.twimg.com/media/F4dAhNWawAABioy?format=jpg&name=900x900)
 
 1. ユーザーが設定した x-amz-storage-class 値に基づいてパリティドライブの数を決定するには、次のようにします：
 
@@ -90,19 +90,19 @@ MinIO は、高性能で S3 互換のオブジェクトストレージを提供�
 
 1. セット内のディスクを再配置し、オブジェクトのキーに対して CRC32 ハッシュを実行して分布関係を確立します。
 
-![Reordering Disks](./reposting-Minio_Exploration/reorderingDisk.webp)
+![Reordering Disks](https://pbs.twimg.com/media/F4dAgfFbMAEs5HI?format=jpg&name=small)
 
 1. オブジェクトのサイズに基づいて EC（イレイションコード）計算のバッファサイズを決定します。最大サイズは 1MB で、1 つのブロックサイズに相当します。
 
 2. 指定されたバッファサイズで EC のデータブロックとパリティブロックを構築します。
 
-![Block Size](./reposting-Minio_Exploration/blockSize.webp)
+![Block Size](https://pbs.twimg.com/media/F4dAYcaagAAUSOz?format=jpg&name=small)
 
 - ブロックサイズ：イレイションコード計算に使用されるデータブロックのサイズを示します。1MB のユーザーデータの場合、イレイションコードのルールに従ってデータブロックとパリティブロックが計算されます。
 - シャードサイズ：イレイションコードブロックの実際のシャードサイズ。たとえば、ブロックサイズが 1MB でデータブロックが 5 つある場合、単一のシャードのサイズは 209,716 バイト（blockSize/dataBlocks を切り上げたもの）で、イレイションコード内の各データブロックの実際のサイズを指します。
 - シャードファイルサイズ：イレイションコードデータの最終サイズ。たとえば、ブロックサイズが 1MB でデータブロックが 5 つあり、ユーザーが 5MB のオブジェクトをアップロードした場合、それは 5 回のイレイションを経て、1 つのシャードの実際のファイルサイズは `5*shardSize` になります。
 
-4. データは対応するノードに書き込まれ、shardFileSize に基づいて異なるストラテジーが適用されます。
+1. データは対応するノードに書き込まれ、shardFileSize に基づいて異なるストラテジーが適用されます。
 
 - 小さなファイルの場合：shardFileSize が特定の条件を満たす場合（マルチバージョンを使用し、shardFileSize が 128K 未満の場合、または shardFileSize が 16K 未満の場合など）、データはメタデータに保存されます（詳細は後述します）。
 
@@ -113,7 +113,7 @@ MinIO は、高性能で S3 互換のオブジェクトストレージを提供�
   - streaming-bitrot：このモードでは、各ブロックはハッシュ値を計算し、対応するデータファイルに書き込みます。
   - whole-bitrot：このモードでは、ドライバ内のファイルに対してハッシュ値を計算します。たとえば、前のセクションの図に示すように、block1+block6 に対してハッシュ値を計算し、それをメタデータに書き込みます。第 2 のアプローチは保護の粒度が粗いことがあり、現在はデフォルトのストラテジーです。
 
-![bit rot](./reposting-Minio_Exploration/bitrot.webp)
+![bit rot](https://pbs.twimg.com/media/F4dAW7xaoAAftUp?format=jpg&name=small)
 
 - 128K 未満のファイルは通常の IO を使用し、大きなファイルは directIO を使用します。書き込みバッファサイズはファイルサイズに基づいて決定され、64M 以上のデータの場合、バッファサイズは 4M になります。その他の大きなファイルは 2M です。データが 4K に整列している場合、directIO が使用され、それ以外の場合は通常の IO が使用されます（データは `cmd/xl-storage.go` の CreteFile メソッドで fdatasync を使用してフラッシュされます）。
 
@@ -233,7 +233,7 @@ MinIO はデータの書き込み時に、まず各ノードからのデータ�
 
 ### 3.2 データのダウンロード
 
-![Data Download](./reposting-Minio_Exploration/dataDownload.webp)
+![Data Download](https://pbs.twimg.com/media/F4dAZG3aMAAkLz9?format=jpg&name=small)
 
 ### 3.2.1 プールの選択
 
@@ -310,7 +310,7 @@ DeleteObject メソッドは、cmd/erasure-server-pool.go のソースコード�
   - メタデータファイルを非同期でクリーンアップするために一時的なバケット minioMetaTmpDeletedBucket に移動します。
   - オブジェクトディレクトリを削除します。
 
-![delete](./reposting-Minio_Exploration/Deletion.webp)
+![delete](https://pbs.twimg.com/media/F4dAZ13bQAAqjbm?format=jpg&name=small)
 
 以下のように、ファイル "temp.1M" は大きなファイルで、データのストレージ構造は左側に示す通りディスクに保存されています。削除時には以下の主要なステップが実行されます：
 
